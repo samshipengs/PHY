@@ -7,7 +7,6 @@ import numpy as np
 import scipy
 from scipy.integrate import quad
 import matplotlib.pyplot as plt
-get_ipython().magic('matplotlib inline')
 
 
 # In[2]:
@@ -43,8 +42,8 @@ def Psi(u_input, tao_input):
     u, tau = u_input, tao_input
     return complex_quadrature(integrand, lower_K, upper_K)[0]
 
-def Psi_square(u_input, tao_input):
-    Psi_result = Psi(u_input, tao_input)
+def Psi_square(u_input, tau_input):
+    Psi_result = Psi(u_input, tau_input)
     return scipy.real(np.conjugate(Psi_result)*Psi_result)
 
 
@@ -61,29 +60,32 @@ u_line = np.arange(-10, 10, 0.1)
 
 # In[6]:
 
-t0 = tau_line[0]
-psi_square= [Psi_square(i, t0) for i in u_line]
+# t0 = tau_line[0]
+# psi_square= [Psi_square(i, t0) for i in u_line]
 # psi_square = Psi_square(u_line, t0)
 
 
 # In[7]:
 
-plt.plot(u_line, psi_square)
+# plt.plot(u_line, psi_square)
 
 
 # In[13]:
 
 result = []
 for t in tau_line:
-    result.append([Psi_square(i, t0) for i in u_line])
-
+    result.append([Psi_square(i, t) for i in u_line])
+print(len(result), len(result[0]))
 
 # In[16]:
 
 from matplotlib import animation
+fig, ax = plt.subplots()
+
 fig = plt.figure()
-ax = plt.axes()
+ax = plt.axes(xlim=(-10, 10), ylim=(0, 2))
 line, = ax.plot([], [], lw=2)
+
 # initialization function: plot the background of each frame
 def init():
     line.set_data([], [])
@@ -96,8 +98,8 @@ def animate(t):
     return line,
 
 # call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=range(len(result)), interval=200, blit=True)
+anim = animation.FuncAnimation(fig, animate, range(len(result)), init_func=init,
+                               interval=50, blit=True)
 plt.show()
 
 
