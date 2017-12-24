@@ -7,13 +7,13 @@ import time
 from helper import memoized
 
 
+# use memoized in hope for speeding upo python integral calculation
+# https://stackoverflow.com/questions/1988804/what-is-memoization-and-how-can-i-use-it-in-python
 exp = memoized(np.exp)
 sqrt = memoized(np.sqrt)
 conjugate = memoized(np.conjugate)
 
 
-
-t1 = time.time()
 # some constants
 beta = 4.
 K0 = 1
@@ -51,49 +51,53 @@ def Psi_square(u_input, tau_input):
     return scipy.real(conjugate(Psi_result)*Psi_result)
 
 
-# In[4]:
 
-tau_line = np.arange(-30, 10, 0.1)
+# define range for tau and u
+tau_line = np.arange(-30, 30, 1)
 u_line = np.arange(-30, 0, 0.1)
 
 
-# omega = memoized(omega)
-# complex_quadrature = memoized(complex_quadrature)
-# integrand = memoized(integrand)
-# Psi = memoized(Psi)
-# Psi_square = memoized(Psi_square)
+# for each time point tau, we evaulate the integral over different u,
+# save it to a list because we don't want to calculate it later on the fly for the animation
+# since the computation takes a long time
 
+t1 = time.time()
 result = []
 for t in tau_line:
     result.append([Psi_square(i, t) for i in u_line])
-print(len(result), len(result[0]))
-
 t2 = time.time()
+
 print('Total time took {0:.2f}min'.format((t2-t1)/60))
-# In[16]:
+
+
+
+# start creating the animation 
+# see https://matplotlib.org/examples/animation/simple_anim.html 
 
 fig = plt.figure()
-ax = plt.axes(xlim=(-30, 0), ylim=(0, 2))
+ax = plt.axes(xlim=(-30, 0), ylim=(0, 1))
 line, = ax.plot([], [], lw=2)
 
-# initialization function: plot the background of each frame
-def init():
-    line.set_data([], [])
-    return line,
-# animation function.  This is called sequentially
+
 def animate(t):
     x = u_line
     y = result[t]
     line.set_data(x, y)
     return line,
 
+# Init only required for blitting to give a clean slate.
+def init():
+    line.set_data([], [])
+    return line,
+
+
 # call the animator.  blit=True means only re-draw the parts that have changed.
 anim = animation.FuncAnimation(fig, animate, range(len(result)), init_func=init,
                                interval=50, blit=True)
+
+anim.save('barrier_E_lt_V_0.mp4', fps=15, extra_args=['-vcodec', 'libx264'])
+
 plt.show()
-
-
-# In[ ]:
 
 
 
